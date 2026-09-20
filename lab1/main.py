@@ -1,4 +1,4 @@
-import display
+#import display
 import numpy as np
 import pandas as pd
 
@@ -50,16 +50,18 @@ print("5-й и 6-й элементы:", S[[4, 5]])
 # 2.1 Создание векторов (столбцов)
 MaleStruct = ["Female", "Male"]
 Number = [10,1,50,5,20,22]
-City = [ "Владивосток", "Москва", "СПБ", "Челябинск", "Ульяновск", "" ]
+Cities = [ "Владивосток", "Москва", "СПБ", "Челябинск", "Ульяновск", "" ]
 
-print(names)
-print(subject)
-print(points)
+print(MaleStruct)
+print(Number)
+print(Cities)
+
+Gender = (MaleStruct * 3)[:len(Number)]
 
 EXAM = pd.DataFrame({
-    "Names": names,
-    "Subject": subject,
-    "Points": points
+    "Gender": Gender,
+    "Points": Number,
+    "City": Cities
 })
 
 EXAM
@@ -93,25 +95,25 @@ EXAM.loc[0:2, "Points"]   # .loc использует метки (здесь с�
 
 print(EXAM[EXAM["Points"] > 50])
 
-# только столбец Number:
+# только столбец Points:
 print("\nТолько Points > 50:")
 print(EXAM.loc[EXAM["Points"] > 50, "Points"])
 #print(EXAM.loc(EXAM["Points" > 40, 2])) # пока не получается
 
 # 2.8 Все значения баллов по математике
-print(EXAM[EXAM["Subject"] == "Math"])
+print(EXAM[EXAM["City"] == "Москва"])
 # или только числа:
-print("\nБаллы по математике:")
-print(EXAM.loc[EXAM["Subject"] == "Math", "Points"])
+print("\nБаллы по Москве:")
+print(EXAM.loc[EXAM["City"] == "Москва", "Points"])
 
 # 2.9 Первые и последние строки
 
 
 print("Первые 3 строки:")
-display(EXAM.head(1))
+print(EXAM.head(1))
 
 print("\nПоследние 2 строки:")
-display(EXAM.tail(3))
+print(EXAM.tail(3)) #был display
 
 # 3.1 Создание матрицы размерности 2×8
 m1 = np.arange(1, 7).reshape(2, 3)   # 16 элементов → 2 строки × 8 столбцов

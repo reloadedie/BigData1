@@ -1,192 +1,206 @@
-#import display
+
+# Введение в анализ больших данных
+# Задание 1
+
 import numpy as np
 import pandas as pd
 
-# 1.1 Создание вектора S1 со значениями от 1 до 10
+# 1.1 Создаём вектор S1 со значениями от 1 до 10 всеми возможными способами
 
 # Способ 1: обычный список Python
-S1_list = list(range(1, 6))          # range(1, 11) → 1..10
-print("Список:", S1_list)
+S1_list = list(range(1, 11))                # range(1, 11) -> 1..10
+print("Способ 1 (list):", S1_list)
 
 # Способ 2: NumPy-массив (предпочтительно для вычислений)
-S1 = np.arange(1, 6)
-print("NumPy array:", S1)
+S1 = np.arange(1, 11)
+print("Способ 2 (np.arange):", S1)
 print("Тип:", type(S1))
 
 # Способ 3: Pandas Series (удобно, если нужны метки/имена)
-S1_series = pd.Series(range(1, 6))
-print("Pandas Series:\n", S1_series)
+S1_series = pd.Series(range(1, 11))
+print("Способ 3 (pd.Series):")
+print(S1_series)
+print()
 
 # 1.2 Вектор S2 от 1 до 10 с шагом 0.5
-S2 = np.arange(1, 6, 1.5)          # stop не включается, поэтому 10.5
-# или
-S2_alt = np.linspace(1, 5.5, num=4)   # 19 точек от 1 до 10 включительно
-
-print("S2 (arange):", S2)
+S2 = np.arange(1, 10.5, 0.5)                # 19 значений: 1.0, 1.5, ..., 10.0
+# Альтернатива через linspace: np.linspace(1, 10, 19)
+print("S2:", S2)
 print("Длина S2:", len(S2))
 print()
-print("S2_alt (linspace):", S2_alt)
-print("Длина S2_alt:", len(S2_alt))
 
-# 1.3 Объединение векторов S1 и S2 в вектор S
-# В R: c(S1, S2)
-
+# 1.3 Объединяем S1 и S2 в вектор S (в R это было бы c(S1, S2))
 S = np.concatenate([S1, S2])
-
 print("Объединённый вектор S:")
 print(S)
 print("Длина S:", len(S))
+print()
 
-# 1.4 Вывести 1-е, 2-е и 3-е значения вектора S
-# В Python индексация с 0 → S[0:3]
+# 1.4 Выводим 3-е, 4-е и 5-е значения вектора S
+# Python индексирует с 0 -> элементы с индексами 2, 3, 4
+print("3-е, 4-е, 5-е значения S:", S[[2, 3, 4]])
 
-print("Элементы 1, 2, 3:", S[0:3])
+# 1.5 Выбираем только первое и четвёртое значения вектора S
+# индексы 0 и 3
+print("1-е и 4-е значения S:", S[[0, 3]])
+print()
 
-# или явно:
-print("Через fancy indexing:", S[[0, 1, 2]])
+# 2. ТАБЛИЦА (DataFrame)
 
-print("5-й и 6-й элементы:", S[[4, 5]])
+# 2.1 Создаём текстовые векторы City и Sex,
+#     а также вектор с численностью Number
+MaleStruct = ["Female", "Male"]                                   # «пол»
+Cities = ["Владивосток", "Москва", "СПБ", "Челябинск", "Ульяновск", "Казань"]
+Number = [12000, 8000, 15000, 5000, 20000, 22000]                 # численность
 
-# 2.1 Создание векторов (столбцов)
-MaleStruct = ["Female", "Male"]
-Number = [10,1,50,5,20,22]
-Cities = [ "Владивосток", "Москва", "СПБ", "Челябинск", "Ульяновск", "" ]
+print("Cities:", Cities)
+print("MaleStruct:", MaleStruct)
+print("Number:", Number)
 
-print(MaleStruct)
-print(Number)
-print(Cities)
+# Собираем столбец Sex, повторяя MaleStruct до нужной длины
+Sex = (MaleStruct * 3)[:len(Number)]
+print("Sex:", Sex)
+print()
 
-Gender = (MaleStruct * 3)[:len(Number)]
-
-EXAM = pd.DataFrame({
-    "Gender": Gender,
-    "Points": Number,
-    "City": Cities
+# 2.3 Объединяем три вектора в таблицу данных CITY с заголовками
+CITY = pd.DataFrame({
+    "City": Cities,
+    "Sex": Sex,
+    "Number": Number
 })
 
-EXAM
+# 2.4 Визуализируем содержимое таблицы CITY
+print("Таблица CITY:")
+print(CITY)
+print()
 
-# 2.4 Просмотр структуры таблицы
-# В R: str(EXAM)
-# В Python: .info() или .dtypes + .shape
+# 2.5 Выводим имена переменных, входящих в таблицу CITY
+print("Имена столбцов CITY:", CITY.columns.tolist())
+print()
 
-print("Информация о таблице:")
-EXAM.info()
+# 2.6 Извлекаем элементы 1–3 из столбца Number таблицы CITY
+print("Элементы 1–3 столбца Number:")
+print(CITY["Number"].iloc[0:3])
+print()
 
-print("\nТипы столбцов:")
-print(EXAM.dtypes)
+# 2.7 Извлекаем все значения численности, превышающие 10000
+print("Строки, где Number > 10000:")
+print(CITY[CITY["Number"] > 10000])
+print()
 
-print("\nРазмерность (строки, столбцы):", EXAM.shape)
+# 2.8 Извлекаем все значения численности мужского населения
+print("Строки, где Sex == 'Male':")
+print(CITY[CITY["Sex"] == "Male"])
+print()
 
-print(EXAM.columns.tolist())
-# или просто
-EXAM.columns
+# 2.9 Первые 3 и последние 2 строки таблицы CITY
+print("Первые 3 строки (head):")
+print(CITY.head(3))
+print()
 
-# 2.6 Извлечь элементы 1–3 из столбца Points
+print("Последние 2 строки (tail):")
+print(CITY.tail(2))
+print()
 
-print(EXAM["Points"].iloc[0:3])
+# 3. МАТРИЦА
 
-# альтернативы:
-EXAM.Points.iloc[0:3]
-EXAM.loc[0:2, "Points"]   # .loc использует метки (здесь совпадают с индексами)
-
-# 2.7 Все значения баллов, превышающие 50
-
-
-print(EXAM[EXAM["Points"] > 50])
-
-# только столбец Points:
-print("\nТолько Points > 50:")
-print(EXAM.loc[EXAM["Points"] > 50, "Points"])
-#print(EXAM.loc(EXAM["Points" > 40, 2])) # пока не получается
-
-# 2.8 Все значения баллов по математике
-print(EXAM[EXAM["City"] == "Москва"])
-# или только числа:
-print("\nБаллы по Москве:")
-print(EXAM.loc[EXAM["City"] == "Москва", "Points"])
-
-# 2.9 Первые и последние строки
-
-
-print("Первые 3 строки:")
-print(EXAM.head(1))
-
-print("\nПоследние 2 строки:")
-print(EXAM.tail(3)) #был display
-
-# 3.1 Создание матрицы размерности 2×8
-m1 = np.arange(1, 7).reshape(2, 3)   # 16 элементов → 2 строки × 8 столбцов
-print("Матрица 2×3:")
+# 3.1 Создаём матрицу размерности 2×8
+m1 = np.arange(1, 17).reshape(2, 8)
+print("Матрица m1 (2×8):")
 print(m1)
 print("Форма:", m1.shape)
+print()
 
-# 3.3 Транспонирование матрицы
+# 3.2 Создаём числовую матрицу размерности 4×6
+m3 = np.arange(1, 25).reshape(4, 6)
+print("Матрица m3 (4×6):")
+print(m3)
+print("Форма:", m3.shape)
+print()
 
+# 3.3 Транспонируем матрицу m3
+m3_T = m3.T
+print("Транспонированная m3 (6×4):")
+print(m3_T)
+print("Форма:", m3_T.shape)
+print()
 
-m2 = m1.T
-print("Транспонированная матрица (3×2):")
-print(m2)
-print("Форма:", m2.shape)
-
-# 3.4 Квадратная матрица и определитель
-
-square = np.array([[1, 2],
-                   [3, 4]])
-print("Квадратная матрица:")
+# 3.4 Создаём квадратную матрицу и вычисляем её определитель
+#     Берём m3 @ m3.T -> получится матрица 4×4
+square = m3 @ m3_T
+print("Квадратная матрица (m3 @ m3.T):")
 print(square)
 
 det = np.linalg.det(square)
 print("Определитель:", det)
+print()
 
-# 4.1 Массив из 24 элементов
 
-# Создадим массив размерности (3, 2, 4) — 3×2 матрицы, 4 «слоя»
-M = np.arange(1, 13).reshape(3, 2, 2)
+# 4.1 Создаём массив M из 24 элементов через np.array + reshape
+M = np.array(range(1, 25)).reshape(3, 2, 4)     # 3×2×4 = 24
 print("Массив M формы", M.shape)
 print(M)
+print()
 
-# Альтернатива: явно через np.array и reshape
-
-# 4.2 Проверка, является ли объект массивом
-
-print("Является ли M ndarray?", isinstance(M, np.ndarray))
-print("Количество измерений (ndim):", M.ndim)
-print("Форма:", M.shape)
-print("Общее число элементов:", M.size)
-
-# 5.1 Создание списка L1: числа от 1 до 6 + TRUE/FALSE три раза
+# 4.2 Проверяем, является ли M массивом
+print("Является ли M ndarray? ->", isinstance(M, np.ndarray))
+print("ndim:", M.ndim)
+print("shape:", M.shape)
+print("size:", M.size)
+print()
 
 
-numbers = list(range(1, 5))
-full_name = ["ФИО"] * 4
+# 5. СПИСОК
 
-L1 = [numbers, full_name]          # обычный список списков
-# или
-L1_dict = {
-    "integers": numbers,
-    "full_name": full_name
-}
+# 5.1 Создаём список L1 из чисел 1..6 и значений (TRUE, FALSE) три раза
+integers = list(range(1, 7))             # [1, 2, 3, 4, 5, 6]
+booleans = [True, False] * 3             # [True, False, True, False, True, False]
 
-print("L1 (list):")
+L1 = [integers, booleans]
+print("Список L1 (без имён):")
 print(L1)
+print()
 
-print("\nL1_dict:")
-print(L1_dict)
-# 6.1 Вектор из 6 объектов трёх классов: Low, Medium, High → фактор
+# 5.2 Присваиваем имена элементам списка L1
+#     В Python «именованный список» удобнее всего делать через dict
+L1 = {
+    "integers": integers,
+    "booleans": booleans
+}
+print("Список L1 (с именами):")
+print(L1)
+print()
 
-classes = ["Low", "Medium", "High"]
-answers1 = [classes, classes]
 
-answers = ["Low", "Medium", "High", "Low", "Medium", "High"]
+# 6. ФАКТОР
 
-# Создание Categorical
-f1 = pd.Categorical(answers, categories=["Low", "Medium", "High"])
+# 6.1 Вектор из 6 объектов трёх классов: Yes, No, Parhaps -> фактор
+answers = ["Yes", "No", "Parhaps", "Yes", "No", "Parhaps"]
+
+f1 = pd.Categorical(answers, categories=["Yes", "No", "Parhaps"])
+print("Фактор f1:")
 print(f1)
 print("Уровни (categories):", f1.categories.tolist())
 print("Коды:", f1.codes)
+print()
 
-df_cat = pd.DataFrame({"answer": answers})
-df_cat["answer"] = df_cat["answer"].astype("category")
-print(df_cat.dtypes)
-print(df_cat["answer"])
+
+# 7. ФРЕЙМ
+
+# 7.1 Создаём фрейм данных F1 из элементов задания
+b = ["a", "b", "c", "a"]
+d = [(i % 2 == 0) for i in range(1, 5)]          # [False, True, False, True]
+e = pd.Categorical(["soft", "hard", "soft", "medium"],
+                   categories=["soft", "hard", "medium"])
+
+F1 = pd.DataFrame({
+    "b": b,
+    "d": d,
+    "e": e
+})
+
+print("Фрейм F1:")
+print(F1)
+print()
+print("Типы столбцов F1:")
+print(F1.dtypes)

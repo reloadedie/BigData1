@@ -1,6 +1,4 @@
-# Описательные статистики в Python
-
-## 0. Импорт и загрузка данных
+# Лабораторная работа №3: Описательные статистики
 
 import os
 import numpy as np
@@ -9,67 +7,79 @@ from scipy import stats
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-
-def load_data():
-    print("Доступные файлы в рабочей директории:")
-    print(os.listdir())
-
-    file_name = "NMES1988.csv"
-
-    if file_name.endswith('.csv'):
-        data = pd.read_csv(file_name, index_col=0)   # index_col=0 убирает rownames
-    elif file_name.endswith('.xlsx'):
-        data = pd.read_excel(file_name, index_col=0)
-    else:
-        raise ValueError("Формат файла не поддерживается. Используйте CSV или Excel.")
-
-    print(f"\nФайл '{file_name}' успешно загружен!")
-    data.to_excel('data.xlsx')
-
-    return data
-
-
-data = load_data()
-print("Размерность:", data.shape)
-print("Столбцы:", data.columns.tolist())
-data.head()
-
 plt.rcParams["figure.figsize"] = (10, 6)
 plt.rcParams["font.size"] = 12
 sns.set_style("whitegrid")
 
-tips.describe(include="all")
 
-## 1. Гистограмма числовой переменной + кривая плотности
+FILE_NAME = "NMES1988.csv"
 
+if not os.path.exists(FILE_NAME):
+    raise FileNotFoundError(
+        f"Файл '{FILE_NAME}' не найден в {os.getcwd()}. "
+        f"Положите файл рядом со скриптом."
+    )
+
+# В файле первый столбец — rownames, его убираем через index_col=0
+data = pd.read_csv(FILE_NAME, index_col=0)
+
+print("Размерность исходного датасета:", data.shape)
+print("Столбцы:", data.columns.tolist())
+print(data.head())
+
+
+# ПУНКТ 2. Открытие таблицы и отбор нужных переменных
+needed_cols = ["visits", "health", "chronic", "adl", "region",
+               "age", "gender", "married", "school", "income",
+               "employed", "insurance"]
+
+available = [c for c in needed_cols if c in data.columns]
+missing = [c for c in needed_cols if c not in data.columns]
+
+print("Доступные столбцы:", available)
+print("Отсутствующие столбцы:", missing if missing else "нет")
+
+df = data[available].copy()
+print("\nРазмерность после отбора:", df.shape)
+print(df.head())
+
+# Общая информация и пропуски
+df.info()
+print("\nПропуски:\n", df.isnull().sum())
+
+# Общая сводка
+print("\nОписательные статистики (include='all'):")
+print(df.describe(include="all"))
+
+
+# ПУНКТ 3. Гистограмма visits с кривой плотности
 fig, ax = plt.subplots()
-ax.hist(tips["total_bill"], bins=25, density=True, color="lightblue",
+ax.hist(df["visits"], bins=30, density=True, color="lightblue",
         edgecolor="black", alpha=0.7, label="гистограмма")
 
-# KDE по данным
-kde = stats.gaussian_kde(tips["total_bill"].dropna())
-xs = np.linspace(tips["total_bill"].min(), tips["total_bill"].max(), 300)
+kde = stats.gaussian_kde(df["visits"].dropna())
+xs = np.linspace(df["visits"].min(), df["visits"].max(), 300)
 ax.plot(xs, kde(xs), color="crimson", lw=2, label="KDE")
 
-ax.set_xlabel("total_bill")
+ax.set_xlabel("visits (число посещений)")
 ax.set_ylabel("плотность")
-ax.set_title("Гистограмма total_bill + KDE")
+ax.set_title("Гистограмма visits + KDE")
 ax.legend()
 plt.tight_layout()
 plt.show()
 
 # То же через seaborn
 plt.figure()
-sns.histplot(tips["total_bill"], bins=25, kde=True, color="steelblue",
+sns.histplot(df["visits"], bins=30, kde=True, color="steelblue",
              edgecolor="black", alpha=0.7)
-plt.xlabel("total_bill")
+plt.xlabel("visits")
 plt.title("Гистограмма + KDE (seaborn)")
 plt.tight_layout()
 plt.show()
 
-## 2. Среднее и стандартная ошибка среднего (SE)
 
-x = tips["total_bill"]
+# ПУНКТ 4. Среднее значение и стандартная ошибка (SE) для visits
+x = df["visits"]
 n = x.count()
 mean_x = x.mean()
 sd_x = x.std(ddof=1)
@@ -80,91 +90,134 @@ print(f"mean  = {mean_x:.4f}")
 print(f"sd    = {sd_x:.4f}")
 print(f"SE    = {se_x:.4f}")
 
-## 3. Медиана, квантили, summary
 
-
+# ПУНКТ 5. Медиана, квартили, summary для visits
 print("Медиана:", x.median())
-print("Квантили 0%, 25%, 50%, 75%, 100%:")
+print("\nКвантили 0%, 25%, 50%, 75%, 100%:")
 print(x.quantile([0, 0.25, 0.5, 0.75, 1.0]))
 print()
 print(x.describe())
 
-## 4. Асимметрия (skewness) и эксцесс (kurtosis)
 
+# ПУНКТ 6. Эксцесс и асимметрия для visits
 sk = stats.skew(x, bias=False)
 ku = stats.kurtosis(x, bias=False)
 print(f"skewness = {sk:.4f}")
 print(f"kurtosis (excess) = {ku:.4f}")
 
-## 5. Описательные статистики **по группам**
 
-# Сводка total_bill по полу клиента
-print(tips.groupby("sex")["total_bill"].describe().round(2))
+# ПУНКТ 7. Медианы и квартили количественных данных по полу
+quant_vars = ["visits", "chronic", "age", "school", "income"]
 
-# Несколько статистик сразу
-tips.groupby("day")["tip"].agg(["count", "mean", "median", "std"]).round(3)
+print("Медианы по полу:")
+print(df.groupby("gender")[quant_vars].median().round(3))
 
-## 6. Boxplot по категориям
+print("\nКвартили visits по полу:")
+print(df.groupby("gender")["visits"]
+        .quantile([0.25, 0.5, 0.75])
+        .unstack()
+        .round(3))
 
+# Полная сводка по каждому количественному показателю
+for var in quant_vars:
+    print(f"\n--- {var} ---")
+    print(df.groupby("gender")[var].describe().round(3))
+
+
+# ПУНКТ 8. Диаграмма размаха (boxplot) visits по полу
 plt.figure(figsize=(8, 5))
-sns.boxplot(data=tips, x="day", y="total_bill", hue="sex")
-plt.title("total_bill по дням недели и полу")
+sns.boxplot(data=df, x="gender", y="visits", palette="Set2")
+plt.title("Количество посещений врача по полу")
+plt.xlabel("Пол")
+plt.ylabel("visits")
 plt.tight_layout()
 plt.show()
 
-## 7. Медианы в разрезе двух факторов
+# Вариант с изменённым параметром range (whis)
+fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+sns.boxplot(data=df, x="gender", y="visits", ax=axes[0], palette="Set2")
+axes[0].set_title("Boxplot (range=1.5, по умолчанию)")
+axes[0].set_ylabel("visits")
 
-med_two = tips.groupby(["day", "sex"])["tip"].median().unstack()
+sns.boxplot(data=df, x="gender", y="visits", ax=axes[1],
+            palette="Set2", whis=3.0)
+axes[1].set_title("Boxplot (range=3.0)")
+axes[1].set_ylabel("visits")
+plt.tight_layout()
+plt.show()
+
+
+# ПУНКТ 9. Медианы visits по gender и region одновременно
+med_two = df.groupby(["region", "gender"])["visits"].median().unstack()
+print("Медианы visits: region × gender")
 print(med_two.round(2))
 
-med_two.plot(kind="bar", figsize=(9, 5), edgecolor="black")
-plt.ylabel("Медиана tip")
-plt.xlabel("День")
-plt.title("Медианные чаевые: день × пол")
+print("\nПолная сводка visits по region и gender:")
+print(df.groupby(["region", "gender"])["visits"]
+        .agg(["count", "mean", "median", "std"])
+        .round(2))
+
+
+# ПУНКТ 10. Столбиковые диаграммы медиан visits по gender и region
+med_two.plot(kind="bar", figsize=(9, 5), edgecolor="black",
+             color=["#66c2a5", "#fc8d62"])
+plt.ylabel("Медиана visits")
+plt.xlabel("Регион")
+plt.title("Медианное число посещений: регион × пол")
 plt.xticks(rotation=0)
-plt.legend(title="sex")
+plt.legend(title="Пол")
 plt.tight_layout()
 plt.show()
 
-## 8. Barplot для одной группировки
+# Альтернатива через seaborn
+plt.figure(figsize=(9, 5))
+sns.barplot(data=df, x="region", y="visits", hue="gender",
+            estimator=np.median, errorbar=None,
+            palette="Set2", edgecolor="black")
+plt.title("Медианное число посещений: регион × пол (seaborn)")
+plt.ylabel("Медиана visits")
+plt.xlabel("Регион")
+plt.tight_layout()
+plt.show()
 
-med_by_time = tips.groupby("time")["total_bill"].median().sort_values(ascending=False)
-print(med_by_time)
 
-plt.figure(figsize=(6, 4))
-med_by_time.plot(kind="bar", color="teal", edgecolor="black")
-plt.ylabel("Медиана total_bill")
-plt.title("Медианный счёт: обед vs ужин")
+# ПУНКТ 11. Медианный возраст по married: вся выборка и по полу
+med_age_married = df.groupby("married")["age"].median()
+print("Медианный возраст по married (вся выборка):")
+print(med_age_married.round(2))
+
+med_age_two = df.groupby(["married", "gender"])["age"].median().unstack()
+print("\nМедианный возраст: married × gender")
+print(med_age_two.round(2))
+
+# Barplot: вся выборка
+plt.figure(figsize=(7, 5))
+med_age_married.plot(kind="bar", color="teal", edgecolor="black")
+plt.ylabel("Медианный возраст (age)")
+plt.xlabel("married")
+plt.title("Медианный возраст по семейному положению")
 plt.xticks(rotation=0)
 plt.tight_layout()
 plt.show()
 
-## 9. Ещё один пример группировки: размер компании
+# Barplot: married × gender
+med_age_two.plot(kind="bar", figsize=(9, 5), edgecolor="black",
+                 color=["#66c2a5", "#fc8d62"])
+plt.ylabel("Медианный возраст (age)")
+plt.xlabel("married")
+plt.title("Медианный возраст: married × gender")
+plt.xticks(rotation=0)
+plt.legend(title="Пол")
+plt.tight_layout()
+plt.show()
 
-# Вся выборка
-med_size = tips.groupby("size")["tip"].median()
-print("Медиана tip по size:")
-print(med_size)
-
-# По времени дня
-med_size_time = tips.groupby(["time", "size"])["tip"].median().unstack()
-print("\nМедиана tip: time × size")
-print(med_size_time.round(2))
-
-fig, axes = plt.subplots(1, 2, figsize=(12, 4))
-
-med_size.plot(kind="bar", ax=axes[0], color="coral", edgecolor="black")
-axes[0].set_title("Медиана tip по size (вся выборка)")
-axes[0].set_ylabel("Медиана tip")
-axes[0].set_xlabel("size")
-
-med_size_time.T.plot(kind="bar", ax=axes[1], edgecolor="black")
-axes[1].set_title("Медиана tip: size × time")
-axes[1].set_ylabel("Медиана tip")
-axes[1].set_xlabel("size")
-axes[1].legend(title="time")
-
-for ax in axes:
-    ax.tick_params(axis="x", rotation=0)
+# Альтернатива через seaborn
+plt.figure(figsize=(9, 5))
+sns.barplot(data=df, x="married", y="age", hue="gender",
+            estimator=np.median, errorbar=None,
+            palette="Set2", edgecolor="black")
+plt.title("Медианный возраст: married × gender (seaborn)")
+plt.ylabel("Медианный возраст (age)")
+plt.xlabel("married")
 plt.tight_layout()
 plt.show()

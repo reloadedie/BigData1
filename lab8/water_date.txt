@@ -1,0 +1,18 @@
+Date - Date on which the sample was collected
+
+Quarter:	
+Winter (1)
+Spring (2)
+Summer (3)
+Autumn (4)
+
+Lat_deg	- Latitude of the collection station in degrees
+
+Depthm - Depth at which the sample was collected (m)
+
+Zone:	
+Depth < 200m (Photic)
+200m < Depth < 1000m (Dysphotic)
+1000m < Depth (Aphotic)
+
+T_degC - Sample temperature in Celsius
